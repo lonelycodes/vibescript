@@ -10,16 +10,18 @@ func TestNextToken(t *testing.T) {
 	tests := []struct {
 		expectedType    token.TokenType
 		expectedLiteral string
+		expectedLine    int
+		expectedCol     int
 	}{
-		{token.ASSIGN, "="},
-		{token.PLUS, "+"},
-		{token.LPAREN, "("},
-		{token.RPAREN, ")"},
-		{token.LBRACE, "{"},
-		{token.RBRACE, "}"},
-		{token.COMMA, ","},
-		{token.SEMICOLON, ";"},
-		{token.EOF, ""},
+		{token.ASSIGN, "=", 1, 1},
+		{token.PLUS, "+", 1, 2},
+		{token.LPAREN, "(", 1, 3},
+		{token.RPAREN, ")", 1, 4},
+		{token.LBRACE, "{", 1, 5},
+		{token.RBRACE, "}", 1, 6},
+		{token.COMMA, ",", 1, 7},
+		{token.SEMICOLON, ";", 1, 8},
+		{token.EOF, "", 1, 9},
 	}
 
 	l := New("token.vibe", input)
@@ -31,6 +33,12 @@ func TestNextToken(t *testing.T) {
 		}
 		if tok.Literal != tt.expectedLiteral {
 			t.Fatalf("tests[%d] - literal is wrong. expected=%q, actual=%q", i, tt.expectedLiteral, tok.Literal)
+		}
+		if tok.Line != tt.expectedLine {
+			t.Fatalf("tests[%d] - line is wrong. expected=%d, actual=%d", i, tt.expectedLine, tok.Line)
+		}
+		if tok.Col != tt.expectedCol {
+			t.Fatalf("tests[%d] - column is wrong. expected=%d, actual=%d", i, tt.expectedCol, tok.Col)
 		}
 	}
 
