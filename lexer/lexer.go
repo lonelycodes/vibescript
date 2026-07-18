@@ -19,9 +19,12 @@ func New(fileName string, input string) *Lexer {
 }
 
 func (l *Lexer) NextToken() token.Token {
+	l.skipWhiteSpace()
+
 	var tok token.Token
 	tok.Line = l.line
 	tok.Col = l.col
+
 	switch l.ch {
 	case '=':
 		tok = l.newToken(token.ASSIGN, string(l.ch))
@@ -39,11 +42,49 @@ func (l *Lexer) NextToken() token.Token {
 		tok = l.newToken(token.LBRACE, string(l.ch))
 	case '}':
 		tok = l.newToken(token.RBRACE, string(l.ch))
+	case '|':
+		tok = l.newToken(token.PIPE, string(l.ch))
 	case 0:
 		tok = token.Token{Type: token.EOF, Literal: "", Line: l.line, Col: l.col}
+	default:
+		if isLetter(l.ch) {
+			tok.Literal = l.readIdentifier()
+			tok.Type = token.LookupIdent(tok.Literal)
+			return tok
+		} else if isDigit(l.ch) {
+			tok.Type = token.INT
+			tok.Literal = l.readNumber()
+			return tok
+		} else {
+			tok = l.newToken(token.ILLEGAL, string(l.ch))
+		}
 	}
 	l.readChar()
 	return tok
+}
+
+func (l *Lexer) readNumber() string {
+	position := l.position
+	for isDigit(l.ch) {
+		l.readChar()
+	}
+	return l.input[position:l.position]
+}
+
+func isDigit(ch byte) bool {
+	return '0' <= ch && ch <= '9'
+}
+
+func (l *Lexer) readIdentifier() string {
+	position := l.position
+	for isLetter(l.ch) {
+		l.readChar()
+	}
+	return l.input[position:l.position]
+}
+
+func isLetter(ch byte) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
 func (l *Lexer) newToken(t token.TokenType, literal string) token.Token {
@@ -51,10 +92,6 @@ func (l *Lexer) newToken(t token.TokenType, literal string) token.Token {
 }
 
 func (l *Lexer) readChar() {
-	if l.ch == '\n' {
-		l.line += 1
-		l.col = 1
-	}
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
 	} else {
@@ -63,4 +100,14 @@ func (l *Lexer) readChar() {
 	l.position = l.readPosition
 	l.readPosition += 1
 	l.col += 1
+}
+
+func (l *Lexer) skipWhiteSpace() {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+		if l.ch == '\n' {
+			l.line += 1
+			l.col = 0
+		}
+		l.readChar()
+	}
 }
