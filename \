@@ -1,0 +1,13 @@
+package lexer
+
+type Lexer struct {
+	input        string
+	fileName     string
+	position     int
+	readPosition int
+	ch           byte
+}
+
+func New(fileName string, input string) {
+
+}
