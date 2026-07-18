@@ -78,6 +78,57 @@ let result = add(five, ten);
 	assertLexer(t, input, tests)
 }
 
+func TestTwoCharOperators(t *testing.T) {
+	input := `let x = a |> f();
+if x != 1 { ret x // 2 }
+y <= 3; y >= 4; b | c; -> ? !
+`
+	tests := []testCase{
+		{token.LET, "let", 1, 1},
+		{token.IDENT, "x", 1, 5},
+		{token.ASSIGN, "=", 1, 7},
+		{token.IDENT, "a", 1, 9},
+		{token.PIPEOP, "|>", 1, 11},
+		{token.IDENT, "f", 1, 14},
+		{token.LPAREN, "(", 1, 15},
+		{token.RPAREN, ")", 1, 16},
+		{token.SEMICOLON, ";", 1, 17},
+
+		{token.IF, "if", 2, 1},
+		{token.IDENT, "x", 2, 4},
+		{token.NOT_EQ, "!=", 2, 6},
+		{token.INT, "1", 2, 9},
+		{token.LBRACE, "{", 2, 11},
+		{token.RET, "ret", 2, 13},
+		{token.IDENT, "x", 2, 17},
+		{token.INTDIV, "//", 2, 19},
+		{token.INT, "2", 2, 22},
+		{token.SEMICOLON, ";", 2, 23},
+		{token.RBRACE, "}", 2, 25},
+
+		{token.IDENT, "y", 3, 1},
+		{token.LTE, "<=", 3, 3},
+		{token.INT, "3", 3, 6},
+		{token.SEMICOLON, ";", 3, 7},
+		{token.IDENT, "y", 3, 9},
+		{token.GTE, ">=", 3, 11},
+		{token.INT, "4", 3, 14},
+		{token.SEMICOLON, ";", 3, 15},
+		{token.IDENT, "b", 3, 17},
+		{token.PIPE, "|", 3, 19},
+		{token.IDENT, "c", 3, 21},
+		{token.SEMICOLON, ";", 3, 22},
+		{token.ARROW, "->", 3, 24},
+		{token.QUESTION, "?", 3, 27},
+		{token.BANG, "!", 3, 29},
+
+		{token.EOF, "", 4, 1},
+	}
+
+	assertLexer(t, input, tests)
+
+}
+
 func assertLexer(t *testing.T, input string, tests []testCase) {
 	t.Helper()
 	l := New("test.vibe", input)
