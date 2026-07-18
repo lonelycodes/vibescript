@@ -5,14 +5,16 @@ import (
 	"testing"
 )
 
-func TestNextToken(t *testing.T) {
+type testCase struct {
+	expectedType    token.TokenType
+	expectedLiteral string
+	expectedLine    int
+	expectedCol     int
+}
+
+func TestBasicFunctionality(t *testing.T) {
 	input := "=+(){},;"
-	tests := []struct {
-		expectedType    token.TokenType
-		expectedLiteral string
-		expectedLine    int
-		expectedCol     int
-	}{
+	tests := []testCase{
 		{token.ASSIGN, "=", 1, 1},
 		{token.PLUS, "+", 1, 2},
 		{token.LPAREN, "(", 1, 3},
@@ -24,8 +26,12 @@ func TestNextToken(t *testing.T) {
 		{token.EOF, "", 1, 9},
 	}
 
-	l := New("token.vibe", input)
+	assertLexer(t, input, tests)
+}
 
+func assertLexer(t *testing.T, input string, tests []testCase) {
+	t.Helper()
+	l := New("test.vibe", input)
 	for i, tt := range tests {
 		tok := l.NextToken()
 		if tok.Type != tt.expectedType {
@@ -41,5 +47,4 @@ func TestNextToken(t *testing.T) {
 			t.Fatalf("tests[%d] - column is wrong. expected=%d, actual=%d", i, tt.expectedCol, tok.Col)
 		}
 	}
-
 }
