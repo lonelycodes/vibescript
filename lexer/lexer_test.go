@@ -218,6 +218,36 @@ _
 	assertLexer(t, input, tests)
 }
 
+func TestEdgeCases(t *testing.T) {
+	t.Run("empty input", func(t *testing.T) {
+		assertLexer(t, "", []testCase{
+			{token.EOF, "", 1, 1},
+		})
+	})
+
+	t.Run("peek at EOF", func(t *testing.T) {
+		assertLexer(t, "!", []testCase{
+			{token.BANG, "!", 1, 1},
+			{token.EOF, "", 1, 2},
+		})
+	})
+
+	t.Run("identifier runs into EOF", func(t *testing.T) {
+		assertLexer(t, "abc", []testCase{
+			{token.IDENT, "abc", 1, 1},
+			{token.EOF, "", 1, 4},
+		})
+	})
+
+	t.Run("CRLF line endings do not drift positions", func(t *testing.T) {
+		assertLexer(t, "a\r\nb", []testCase{
+			{token.IDENT, "a", 1, 1},
+			{token.IDENT, "b", 2, 1},
+			{token.EOF, "", 2, 2},
+		})
+	})
+}
+
 func assertLexer(t *testing.T, input string, tests []testCase) {
 	t.Helper()
 	l := New("test.vibe", input)
