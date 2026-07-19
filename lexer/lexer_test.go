@@ -320,6 +320,104 @@ y
 	assertLexer(t, input, tests)
 }
 
+func TestContext(t *testing.T) {
+	t.Run("full block with tags, braces in prose, and continuation", func(t *testing.T) {
+		input := `ctx "Dedupe a list" {
+  @example dedupe([1, 1]) -> [1]
+  @example f() -> {a: 1}
+  @intent keep first occurrence;
+          order matters
+}
+fn dedupe(xs) { xs }
+`
+		tests := []testCase{
+			{token.CTX, "ctx", 1, 1},
+			{token.STRING, "Dedupe a list", 1, 5},
+			{token.LBRACE, "{", 1, 21},
+
+			{token.CTX_LINE, "@example dedupe([1, 1]) -> [1]", 2, 3},
+			{token.CTX_LINE, "@example f() -> {a: 1}", 3, 3},
+			{token.CTX_LINE, "@intent keep first occurrence;", 4, 3},
+			{token.CTX_LINE, "order matters", 5, 11},
+
+			{token.RBRACE, "}", 6, 1},
+
+			{token.FN, "fn", 7, 1},
+			{token.IDENT, "dedupe", 7, 4},
+			{token.LPAREN, "(", 7, 10},
+			{token.IDENT, "xs", 7, 11},
+			{token.RPAREN, ")", 7, 13},
+			{token.LBRACE, "{", 7, 15},
+			{token.IDENT, "xs", 7, 17},
+			{token.RBRACE, "}", 7, 20},
+			{token.EOF, "", 8, 1},
+		}
+		assertLexer(t, input, tests)
+	})
+
+	t.Run("bare ctx without brace resets the trigger", func(t *testing.T) {
+		input := `ctx "just a summary"
+fn f() { 1 }
+`
+		tests := []testCase{
+			{token.CTX, "ctx", 1, 1},
+			{token.STRING, "just a summary", 1, 5},
+
+			{token.FN, "fn", 2, 1},
+			{token.IDENT, "f", 2, 4},
+			{token.LPAREN, "(", 2, 5},
+			{token.RPAREN, ")", 2, 6},
+			{token.LBRACE, "{", 2, 8},
+			{token.INT, "1", 2, 10},
+			{token.RBRACE, "}", 2, 12},
+			{token.EOF, "", 3, 1},
+		}
+		assertLexer(t, input, tests)
+	})
+
+	t.Run("empty block on one line", func(t *testing.T) {
+		input := `ctx "s" { }
+`
+		tests := []testCase{
+			{token.CTX, "ctx", 1, 1},
+			{token.STRING, "s", 1, 5},
+			{token.LBRACE, "{", 1, 9},
+			{token.RBRACE, "}", 1, 11},
+			{token.EOF, "", 2, 1},
+		}
+		assertLexer(t, input, tests)
+	})
+
+	t.Run("unterminated ctx block reaches EOF without looping", func(t *testing.T) {
+		input := `ctx "s" {
+  @intent foo`
+		tests := []testCase{
+			{token.CTX, "ctx", 1, 1},
+			{token.STRING, "s", 1, 5},
+			{token.LBRACE, "{", 1, 9},
+			{token.CTX_LINE, "@intent foo", 2, 3},
+			{token.EOF, "", 2, 14},
+		}
+		assertLexer(t, input, tests)
+	})
+
+	t.Run("hash and quotes are prose inside ctx, not comments or strings", func(t *testing.T) {
+		input := `ctx "s" {
+  @see RFC #42, the "canonical" doc
+}
+`
+		tests := []testCase{
+			{token.CTX, "ctx", 1, 1},
+			{token.STRING, "s", 1, 5},
+			{token.LBRACE, "{", 1, 9},
+			{token.CTX_LINE, `@see RFC #42, the "canonical" doc`, 2, 3},
+			{token.RBRACE, "}", 3, 1},
+			{token.EOF, "", 4, 1},
+		}
+		assertLexer(t, input, tests)
+	})
+}
+
 func assertLexer(t *testing.T, input string, tests []testCase) {
 	t.Helper()
 	l := New("test.vibe", input)
