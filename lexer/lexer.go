@@ -8,7 +8,7 @@ import (
 
 type Lexer struct {
 	input        string
-	fileName     string
+	FileName     string
 	position     int
 	readPosition int
 	ch           byte
@@ -19,7 +19,7 @@ type Lexer struct {
 }
 
 func New(fileName string, input string) *Lexer {
-	l := &Lexer{fileName: fileName, input: input, line: 1, col: 0}
+	l := &Lexer{FileName: fileName, input: input, line: 1, col: 0}
 	l.readChar()
 	return l
 }

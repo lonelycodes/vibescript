@@ -50,6 +50,7 @@ func testLetStatement(t *testing.T, stmt ast.Statement, name string) bool {
 	letStmt, ok := stmt.(*ast.LetStatement)
 	if !ok {
 		t.Errorf("Expected a let statement, got %T", stmt)
+		return false
 	}
 
 	if letStmt.Name.Value != name {
@@ -59,6 +60,7 @@ func testLetStatement(t *testing.T, stmt ast.Statement, name string) bool {
 
 	if letStmt.Name.TokenLiteral() != name {
 		t.Errorf("Expected token literal to be %s, got %s", name, letStmt.Name.TokenLiteral())
+		return false
 	}
 
 	return true
