@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/lonelycodes/vibescript/repl"
+)
 
 func main() {
-	fmt.Println("Hello, world!")
+	repl.Start(os.Stdin, os.Stdout)
 }
