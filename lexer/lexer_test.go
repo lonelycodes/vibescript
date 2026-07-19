@@ -80,9 +80,10 @@ let result = add(five, ten);
 
 func TestTwoCharOperators(t *testing.T) {
 	input := `let x = a |> f();
-if x != 1 { ret x // 2 }
+if x != 1 { ret x // 2; }
 y <= 3; y >= 4; b | c; -> ? !
 `
+
 	tests := []testCase{
 		{token.LET, "let", 1, 1},
 		{token.IDENT, "x", 1, 5},

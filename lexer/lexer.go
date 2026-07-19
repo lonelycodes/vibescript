@@ -26,8 +26,7 @@ func (l *Lexer) NextToken() token.Token {
 	tok.Col = l.col
 
 	switch l.ch {
-	case '=':
-		tok = l.newToken(token.ASSIGN, string(l.ch))
+
 	case ';':
 		tok = l.newToken(token.SEMICOLON, string(l.ch))
 	case '(':
@@ -42,8 +41,71 @@ func (l *Lexer) NextToken() token.Token {
 		tok = l.newToken(token.LBRACE, string(l.ch))
 	case '}':
 		tok = l.newToken(token.RBRACE, string(l.ch))
+	case '?':
+		tok = l.newToken(token.QUESTION, string(l.ch))
+	case '*':
+		tok = l.newToken(token.STAR, string(l.ch))
+	case '%':
+		tok = l.newToken(token.PERCENT, string(l.ch))
+	case ':':
+		tok = l.newToken(token.COLON, string(l.ch))
+	case '[':
+		tok = l.newToken(token.LBRACKET, string(l.ch))
+	case ']':
+		tok = l.newToken(token.RBRACKET, string(l.ch))
+	case '.':
+		tok = l.newToken(token.DOT, string(l.ch))
+	case '@':
+		tok = l.newToken(token.AT, string(l.ch))
+	case '>':
+		if l.peekChar() == '=' {
+			tok = l.newToken(token.GTE, ">=")
+			l.readChar()
+		} else {
+			tok = l.newToken(token.GT, string(l.ch))
+		}
+	case '<':
+		if l.peekChar() == '=' {
+			tok = l.newToken(token.LTE, "<=")
+			l.readChar()
+		} else {
+			tok = l.newToken(token.LT, string(l.ch))
+		}
+	case '=':
+		if l.peekChar() == '=' {
+			tok = l.newToken(token.EQ, "//")
+			l.readChar()
+		} else {
+			tok = l.newToken(token.ASSIGN, string(l.ch))
+		}
+	case '/':
+		if l.peekChar() == '/' {
+			tok = l.newToken(token.INTDIV, "//")
+			l.readChar()
+		} else {
+			tok = l.newToken(token.SLASH, string(l.ch))
+		}
 	case '|':
-		tok = l.newToken(token.PIPE, string(l.ch))
+		if l.peekChar() == '>' {
+			tok = l.newToken(token.PIPEOP, "|>")
+			l.readChar()
+		} else {
+			tok = l.newToken(token.PIPE, string(l.ch))
+		}
+	case '!':
+		if l.peekChar() == '=' {
+			tok = l.newToken(token.NOT_EQ, "!=")
+			l.readChar()
+		} else {
+			tok = l.newToken(token.BANG, string(l.ch))
+		}
+	case '-':
+		if l.peekChar() == '>' {
+			tok = l.newToken(token.ARROW, "->")
+			l.readChar()
+		} else {
+			tok = l.newToken(token.MINUS, string(l.ch))
+		}
 	case 0:
 		tok = token.Token{Type: token.EOF, Literal: "", Line: l.line, Col: l.col}
 	default:
@@ -61,6 +123,13 @@ func (l *Lexer) NextToken() token.Token {
 	}
 	l.readChar()
 	return tok
+}
+
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0
+	}
+	return l.input[l.readPosition]
 }
 
 func (l *Lexer) readNumber() string {
