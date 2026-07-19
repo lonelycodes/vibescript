@@ -1,6 +1,6 @@
 # VibeScript Language Specification
 
-**Version 0.2.1 (Draft)** · File extension: `.vibe` · July 2026
+**Version 0.2.2 (Draft)** · File extension: `.vibe` · July 2026
 
 ---
 
@@ -319,7 +319,7 @@ fn dedupe(xs: list) -> list {
 ```
 
 - The summary string is required. The braced tag section is optional; a bare `ctx "summary"` (no braces) is valid.
-- **Inside `ctx` braces, content is line-oriented:** each line starting with `@` begins a tag; following lines without `@` continue the previous tag. No semicolons are used inside `ctx` blocks — tag prose may freely contain `;`, `{`, `}` is the only forbidden character (escape as `}}`).
+- **Inside `ctx` braces, content is line-oriented:** each line starting with `@` begins a tag; following lines without `@` continue the previous tag. No semicolons are used inside `ctx` blocks — tag prose may freely contain `;`, `{`, `}`, quotes, and `#`. The block is terminated by a `}` appearing as the **first non-whitespace character of a line** (which is where canonical formatting places it); a `}` anywhere else, such as in an `@example` map literal, is ordinary prose.
 - Recognized tags: `@intent`, `@example`, `@invariant`, `@see` (free-form reference). Unknown tags are preserved but ignored by tooling.
 
 ### 8.2 Executable examples
@@ -491,9 +491,11 @@ Classes/objects (maps + functions suffice) · exceptions · inheritance · macro
 
 ## Changelog
 
+- **v0.2.2** — Fixed `ctx` block termination rule: the block ends at a `}` that is the first non-whitespace character of a line, instead of forbidding `}` in prose with a `}}` escape. The old rule made `@example` lines containing map literals (`@example f() -> {a: 1}`) unwritable without escaping — exactly the kind of trap the language exists to avoid.
+
 - **v0.2.1** — Lexical clarifications discovered during lexer implementation: 1-based source positions; precise number rules (underscores stripped, `.`/`e` require a following digit, no exponent signs or leading-dot floats); precise string rules (plain strings are single-line, escape set fixed at `\n \t \\ \"`, unterminated strings are lexical errors).
 
 - **v0.2** — Switched from indentation-based blocks to C-style braces and semicolons. Rationale: robustness to whitespace corruption in copy-paste and patch-splicing pipelines; layout is now fully non-semantic and always repairable by `vibe fmt`. Semicolons are pure terminators (never semantic, unlike Rust). `then` keyword removed; `if` expression now uses brace form.
 - **v0.1** — Initial draft (indentation-based).
 
-*End of specification — VibeScript v0.2 (Draft).*End of specification — VibeScript v0.2 (Draft)._
+_End of specification — VibeScript v0.2 (Draft)._
