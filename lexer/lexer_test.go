@@ -248,6 +248,41 @@ func TestEdgeCases(t *testing.T) {
 	})
 }
 
+func TestNumberFormats(t *testing.T) {
+	input := `3.14;
+1_000_000;
+1e9;
+xs[1:3];
+1.foo;
+`
+	tests := []testCase{
+		{token.FLOAT, "3.14", 1, 1},
+		{token.SEMICOLON, ";", 1, 5},
+
+		{token.INT, "1000000", 2, 1},
+		{token.SEMICOLON, ";", 2, 10},
+
+		{token.FLOAT, "1e9", 3, 1},
+		{token.SEMICOLON, ";", 3, 4},
+
+		{token.IDENT, "xs", 4, 1},
+		{token.LBRACKET, "[", 4, 3},
+		{token.INT, "1", 4, 4},
+		{token.COLON, ":", 4, 5},
+		{token.INT, "3", 4, 6},
+		{token.RBRACKET, "]", 4, 7},
+		{token.SEMICOLON, ";", 4, 8},
+
+		{token.INT, "1", 5, 1},
+		{token.DOT, ".", 5, 2},
+		{token.IDENT, "foo", 5, 3},
+		{token.SEMICOLON, ";", 5, 6},
+
+		{token.EOF, "", 6, 1},
+	}
+	assertLexer(t, input, tests)
+}
+
 func assertLexer(t *testing.T, input string, tests []testCase) {
 	t.Helper()
 	l := New("test.vibe", input)
