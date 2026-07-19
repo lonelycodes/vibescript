@@ -283,6 +283,30 @@ xs[1:3];
 	assertLexer(t, input, tests)
 }
 
+func TestStrings(t *testing.T) {
+	input := `let s = "hi there";
+"a\"b";
+"x{y}; // z";
+"oops`
+	tests := []testCase{
+		{token.LET, "let", 1, 1},
+		{token.IDENT, "s", 1, 5},
+		{token.ASSIGN, "=", 1, 7},
+		{token.STRING, "hi there", 1, 9},
+		{token.SEMICOLON, ";", 1, 19},
+
+		{token.STRING, `a\"b`, 2, 1},
+		{token.SEMICOLON, ";", 2, 7},
+
+		{token.STRING, "x{y}; // z", 3, 1},
+		{token.SEMICOLON, ";", 3, 13},
+
+		{token.ILLEGAL, `"oops`, 4, 1},
+		{token.EOF, "", 4, 6},
+	}
+	assertLexer(t, input, tests)
+}
+
 func assertLexer(t *testing.T, input string, tests []testCase) {
 	t.Helper()
 	l := New("test.vibe", input)
