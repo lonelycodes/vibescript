@@ -1,6 +1,10 @@
 package lexer
 
-import "github.com/lonelycodes/vibescript/token"
+import (
+	"strings"
+
+	"github.com/lonelycodes/vibescript/token"
+)
 
 type Lexer struct {
 	input        string
@@ -133,10 +137,30 @@ func (l *Lexer) peekChar() byte {
 
 func (l *Lexer) readNumber() (token.TokenType, string) {
 	position := l.position
-	for isDigit(l.ch) {
+	tokType := token.TokenType(token.INT)
+
+	l.readDigits()
+
+	if l.ch == '.' && isDigit(l.peekChar()) {
+		tokType = token.TokenType(token.FLOAT)
+		l.readChar() // read the '.'
+		l.readDigits()
+	}
+
+	if l.ch == 'e' && isDigit(l.peekChar()) {
+		tokType = token.TokenType(token.FLOAT)
+		l.readChar() // read the 'e'
+		l.readDigits()
+	}
+
+	literal := strings.ReplaceAll(l.input[position:l.position], "_", "")
+	return tokType, literal
+}
+
+func (l *Lexer) readDigits() {
+	for isDigit(l.ch) || l.ch == '_' {
 		l.readChar()
 	}
-	return token.INT, l.input[position:l.position]
 }
 
 func isDigit(ch byte) bool {
