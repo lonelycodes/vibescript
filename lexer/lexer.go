@@ -14,6 +14,8 @@ type Lexer struct {
 	ch           byte
 	line         int
 	col          int
+	ctxState     int  // 0=idle, 1=saw CTX, 2=saw CTX STRING
+	ctxMode      bool // TRUE if we're inside a ctx { ... } body
 }
 
 func New(fileName string, input string) *Lexer {
@@ -23,6 +25,10 @@ func New(fileName string, input string) *Lexer {
 }
 
 func (l *Lexer) NextToken() token.Token {
+	if l.ctxMode {
+		return l.nextCtxToken()
+	}
+
 	l.skipWhiteSpace()
 
 	var tok token.Token
@@ -110,23 +116,82 @@ func (l *Lexer) NextToken() token.Token {
 			tok = l.newToken(token.MINUS, string(l.ch))
 		}
 	case '"':
-		return l.readString(tok)
+		tok = l.readString(tok)
+		l.updateCtxState(tok.Type)
+		return tok
 	case 0:
 		tok = token.Token{Type: token.EOF, Literal: "", Line: l.line, Col: l.col}
 	default:
 		if isLetter(l.ch) {
 			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
+			l.updateCtxState(tok.Type)
 			return tok
 		} else if isDigit(l.ch) {
 			tok.Type, tok.Literal = l.readNumber()
+			l.updateCtxState(tok.Type)
 			return tok
 		} else {
 			tok = l.newToken(token.ILLEGAL, string(l.ch))
 		}
 	}
 	l.readChar()
+	l.updateCtxState(tok.Type)
 	return tok
+}
+
+func (l *Lexer) nextCtxToken() token.Token {
+	l.skipCtxWhiteSpace()
+	var tok token.Token
+	tok.Line = l.line
+	tok.Col = l.col
+
+	if l.ch == 0 {
+		// unterminated CTX block
+		tok.Type = token.EOF
+		tok.Literal = ""
+		return tok
+	}
+	if l.ch == '}' {
+		// end of the CTX block
+		tok.Type = token.RBRACE
+		tok.Literal = "}"
+		l.ctxMode = false
+		l.readChar()
+		return tok
+	}
+
+	position := l.position
+	for l.ch != '\n' && l.ch != 0 {
+		l.readChar()
+	}
+	tok.Type = token.CTX_LINE
+	tok.Literal = strings.TrimRight(l.input[position:l.position], " \t")
+	return tok
+}
+
+func (l *Lexer) skipCtxWhiteSpace() {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\r' || l.ch == '\n' {
+		if l.ch == '\n' {
+			l.line += 1
+			l.col = 0
+		}
+		l.readChar()
+	}
+}
+
+func (l *Lexer) updateCtxState(t token.TokenType) {
+	switch {
+	case t == token.CTX:
+		l.ctxState = 1
+	case l.ctxState == 1 && t == token.STRING:
+		l.ctxState = 2
+	case l.ctxState == 2 && t == token.LBRACE:
+		l.ctxMode = true
+		l.ctxState = 0
+	default:
+		l.ctxState = 0
+	}
 }
 
 func (l *Lexer) readString(tok token.Token) token.Token {
