@@ -1,6 +1,6 @@
 # VibeScript Language Specification
 
-**Version 0.2 (Draft)** · File extension: `.vibe` · July 2026
+**Version 0.2.1 (Draft)** · File extension: `.vibe` · July 2026
 
 ---
 
@@ -26,6 +26,7 @@ VibeScript is a general-purpose scripting language optimized for being read, wri
 - **Semicolons terminate statements.** Newlines and indentation are not significant; whitespace is free-form.
 - **Braces `{ }` delimit blocks.** Braces are mandatory, even for single-statement bodies (no dangling-else ambiguity, no goto-fail bugs).
 - Canonical style (enforced by `vibe fmt`): K&R — opening brace on the same line, 2-space indent.
+- **Source positions are 1-based**: the first line is line 1, the first character of a line is column 1. Error values (§7) and all tooling output use this convention.
 
 ### 2.2 Comments
 
@@ -57,6 +58,19 @@ ctx true false none and or not try err brk skip
 | none  | `none`                         |
 | list  | `[1, 2, 3]`, `[]`              |
 | map   | `{name: "Ada", age: 36}`, `{}` |
+
+**Number rules (precise):**
+
+- Underscores may appear between digits for readability (`1_000_000`) and are ignored (stripped) — the token's value contains digits only.
+- A `.` continues a number **only when immediately followed by a digit**. Thus `1.foo` lexes as `1` `.` `foo` (a parse error), and `xs[1:3]` is unambiguous.
+- An exponent is a lowercase `e` immediately followed by one or more digits (`1e9`, `3.14e2`). No `E`, no `e+`/`e-` sign, no leading-dot floats (`.5` is illegal; write `0.5`).
+- Any number containing a fraction or exponent is a `float`; otherwise an `int`.
+
+**String rules (precise):**
+
+- Plain `"..."` strings are **single-line**: a raw newline before the closing quote is a lexical error. Use `"""..."""` for multiline content. (This localizes forgotten-quote errors to one line instead of swallowing the rest of the file.)
+- A backslash shields the next character; recognized escapes are `\n`, `\t`, `\\`, `\"`. Unknown escape sequences are an error.
+- An unterminated string is a lexical error reported at the opening quote.
 
 - Map literals and blocks both use `{ }`; the parser disambiguates by position (a `{` in expression position is a map, in statement/body position a block). `{}` in expression position is the empty map.
 - Map keys written bare (`name:`) are string keys. Computed keys use brackets: `{[expr]: value}`.
@@ -477,7 +491,9 @@ Classes/objects (maps + functions suffice) · exceptions · inheritance · macro
 
 ## Changelog
 
+- **v0.2.1** — Lexical clarifications discovered during lexer implementation: 1-based source positions; precise number rules (underscores stripped, `.`/`e` require a following digit, no exponent signs or leading-dot floats); precise string rules (plain strings are single-line, escape set fixed at `\n \t \\ \"`, unterminated strings are lexical errors).
+
 - **v0.2** — Switched from indentation-based blocks to C-style braces and semicolons. Rationale: robustness to whitespace corruption in copy-paste and patch-splicing pipelines; layout is now fully non-semantic and always repairable by `vibe fmt`. Semicolons are pure terminators (never semantic, unlike Rust). `then` keyword removed; `if` expression now uses brace form.
 - **v0.1** — Initial draft (indentation-based).
 
-_End of specification — VibeScript v0.2 (Draft)._
+*End of specification — VibeScript v0.2 (Draft).*End of specification — VibeScript v0.2 (Draft)._

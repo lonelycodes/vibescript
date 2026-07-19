@@ -109,6 +109,8 @@ func (l *Lexer) NextToken() token.Token {
 		} else {
 			tok = l.newToken(token.MINUS, string(l.ch))
 		}
+	case '"':
+		return l.readString(tok)
 	case 0:
 		tok = token.Token{Type: token.EOF, Literal: "", Line: l.line, Col: l.col}
 	default:
@@ -124,6 +126,32 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	}
 	l.readChar()
+	return tok
+}
+
+func (l *Lexer) readString(tok token.Token) token.Token {
+	position := l.position
+	l.readChar() // read the opening '"'
+
+	for l.ch != '"' {
+		if l.ch == 0 || l.ch == '\n' {
+			tok.Type = token.ILLEGAL
+			tok.Literal = l.input[position:l.position]
+			return tok
+		}
+		if l.ch == '\\' {
+			l.readChar()
+			if l.ch == 0 {
+				continue
+			}
+		}
+		l.readChar()
+	}
+
+	tok.Type = token.TokenType(token.STRING)
+	tok.Literal = l.input[position+1 : l.position]
+	l.readChar() // read the closing '"'
+
 	return tok
 }
 
