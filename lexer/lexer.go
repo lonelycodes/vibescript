@@ -73,7 +73,7 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	case '=':
 		if l.peekChar() == '=' {
-			tok = l.newToken(token.EQ, "//")
+			tok = l.newToken(token.EQ, "==")
 			l.readChar()
 		} else {
 			tok = l.newToken(token.ASSIGN, string(l.ch))
