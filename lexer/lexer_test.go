@@ -127,7 +127,21 @@ y <= 3; y >= 4; b | c; -> ? !
 	}
 
 	assertLexer(t, input, tests)
+}
 
+func TestNoWhitespace(t *testing.T) {
+	input := "a1;b(2);"
+	tests := []testCase{
+		{token.IDENT, "a1", 1, 1},
+		{token.SEMICOLON, ";", 1, 3},
+		{token.IDENT, "b", 1, 4},
+		{token.LPAREN, "(", 1, 5},
+		{token.INT, "2", 1, 6},
+		{token.RPAREN, ")", 1, 7},
+		{token.EOF, "", 1, 8},
+		{token.SEMICOLON, ";", 1, 9},
+	}
+	assertLexer(t, input, tests)
 }
 
 func assertLexer(t *testing.T, input string, tests []testCase) {
