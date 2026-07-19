@@ -138,8 +138,8 @@ func TestNoWhitespace(t *testing.T) {
 		{token.LPAREN, "(", 1, 5},
 		{token.INT, "2", 1, 6},
 		{token.RPAREN, ")", 1, 7},
-		{token.EOF, "", 1, 8},
-		{token.SEMICOLON, ";", 1, 9},
+		{token.SEMICOLON, ";", 1, 8},
+		{token.EOF, "", 1, 9},
 	}
 	assertLexer(t, input, tests)
 }
