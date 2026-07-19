@@ -30,7 +30,6 @@ func (l *Lexer) NextToken() token.Token {
 	tok.Col = l.col
 
 	switch l.ch {
-
 	case ';':
 		tok = l.newToken(token.SEMICOLON, string(l.ch))
 	case '(':
