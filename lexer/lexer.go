@@ -172,11 +172,20 @@ func (l *Lexer) readChar() {
 }
 
 func (l *Lexer) skipWhiteSpace() {
-	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
-		if l.ch == '\n' {
+	for {
+		switch l.ch {
+		case ' ', '\t', '\r':
+			l.readChar()
+		case '\n':
 			l.line += 1
 			l.col = 0
+			l.readChar()
+		case '#':
+			for l.ch != '\n' && l.ch != 0 {
+				l.readChar()
+			}
+		default:
+			return
 		}
-		l.readChar()
 	}
 }
