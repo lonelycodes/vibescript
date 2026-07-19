@@ -144,6 +144,80 @@ func TestNoWhitespace(t *testing.T) {
 	assertLexer(t, input, tests)
 }
 
+func TestKeywordsAndIdentifiers(t *testing.T) {
+	input := `fn
+let
+var
+if
+elif
+else
+for
+in
+while
+match
+ret
+use
+ctx
+true
+false
+none
+and
+or
+not
+try
+err
+brk
+skip
+fnord
+letter
+iffy
+retro
+intact
+matches
+truex
+_foo
+_
+`
+	tests := []testCase{
+		{token.FN, "fn", 1, 1},
+		{token.LET, "let", 2, 1},
+		{token.VAR, "var", 3, 1},
+		{token.IF, "if", 4, 1},
+		{token.ELIF, "elif", 5, 1},
+		{token.ELSE, "else", 6, 1},
+		{token.FOR, "for", 7, 1},
+		{token.IN, "in", 8, 1},
+		{token.WHILE, "while", 9, 1},
+		{token.MATCH, "match", 10, 1},
+		{token.RET, "ret", 11, 1},
+		{token.USE, "use", 12, 1},
+		{token.CTX, "ctx", 13, 1},
+		{token.TRUE, "true", 14, 1},
+		{token.FALSE, "false", 15, 1},
+		{token.NONE, "none", 16, 1},
+		{token.AND, "and", 17, 1},
+		{token.OR, "or", 18, 1},
+		{token.NOT, "not", 19, 1},
+		{token.TRY, "try", 20, 1},
+		{token.ERR, "err", 21, 1},
+		{token.BRK, "brk", 22, 1},
+		{token.SKIP, "skip", 23, 1},
+
+		{token.IDENT, "fnord", 24, 1},
+		{token.IDENT, "letter", 25, 1},
+		{token.IDENT, "iffy", 26, 1},
+		{token.IDENT, "retro", 27, 1},
+		{token.IDENT, "intact", 28, 1},
+		{token.IDENT, "matches", 29, 1},
+		{token.IDENT, "truex", 30, 1},
+
+		{token.IDENT, "_foo", 31, 1},
+		{token.IDENT, "_", 32, 1},
+		{token.EOF, "", 33, 1},
+	}
+	assertLexer(t, input, tests)
+}
+
 func assertLexer(t *testing.T, input string, tests []testCase) {
 	t.Helper()
 	l := New("test.vibe", input)
