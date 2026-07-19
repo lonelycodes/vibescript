@@ -307,6 +307,19 @@ func TestStrings(t *testing.T) {
 	assertLexer(t, input, tests)
 }
 
+func TestComments(t *testing.T) {
+	input := `x # trailing comment
+# full line comment
+y
+`
+	tests := []testCase{
+		{token.IDENT, "x", 1, 1},
+		{token.IDENT, "y", 3, 1},
+		{token.EOF, "", 4, 1},
+	}
+	assertLexer(t, input, tests)
+}
+
 func assertLexer(t *testing.T, input string, tests []testCase) {
 	t.Helper()
 	l := New("test.vibe", input)
